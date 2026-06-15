@@ -1,0 +1,385 @@
+{
+    "info": {
+        "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "name": "Airport API (Symfony)",
+        "description": "Full CRUD API for managing airport planes.\n\n## Data Model: Plane\n| Field | Type | Required | Description |\n|-------|------|----------|-------------|\n| id | integer | auto | Unique identifier (auto-generated) |\n| model | string | yes | Aircraft model name |\n| airline | string | yes | Airline company name |\n\n## Status Codes\n- `200` OK — request successful\n- `201` Created — resource created\n- `400` Bad Request — invalid JSON or missing fields\n- `404` Not Found — resource does not exist\n- `500` Internal Server Error — unexpected server error\n\n## Seed Data (in-memory)\nThe API starts with 4 pre-loaded planes:\n- ID 1: Boeing 747 — Ukraine International\n- ID 2: Airbus A320 — Wizz Air\n- ID 3: Antonov 225 — Antonov Dream Airlines\n- ID 4: Antonov 124 — Antonov Dream Airlines\n\n⚠️ Data is stored in-memory and resets on server restart.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8000",
+            "type": "string",
+            "description": "Base URL for Symfony server (symfony serve or php -S localhost:8000/public)"
+        }
+    ],
+    "item": [
+        {
+            "name": "Planes",
+            "description": "CRUD operations for airplane records",
+            "item": [
+                {
+                    "name": "List all planes",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/planes",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "planes"]
+                        },
+                        "description": "Returns an array of all planes in the system.\n\n**No parameters required.**\n\n### Response 200 OK\n```json\n{\n  \"status\": \"success\",\n  \"data\": [\n    { \"id\": 1, \"model\": \"Boeing 747\", \"airline\": \"Ukraine International\" },\n    { \"id\": 2, \"model\": \"Airbus A320\", \"airline\": \"Wizz Air\" },\n    { \"id\": 3, \"model\": \"Antonov 225\", \"airline\": \"Antonov Dream Airlines\" },\n    { \"id\": 4, \"model\": \"Antonov 124\", \"airline\": \"Antonov Dream Airlines\" }\n  ]\n}\n```"
+                    },
+                    "response": [
+                        {
+                            "name": "200 OK — All planes returned",
+                            "status": "OK",
+                            "code": 200,
+                            "header": [{ "key": "Content-Type", "value": "application/json" }],
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"success\",\n  \"data\": [\n    { \"id\": 1, \"model\": \"Boeing 747\", \"airline\": \"Ukraine International\" },\n    { \"id\": 2, \"model\": \"Airbus A320\", \"airline\": \"Wizz Air\" },\n    { \"id\": 3, \"model\": \"Antonov 225\", \"airline\": \"Antonov Dream Airlines\" },\n    { \"id\": 4, \"model\": \"Antonov 124\", \"airline\": \"Antonov Dream Airlines\" }\n  ]\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Create a new plane",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"model\": \"Boeing 737-800\",\n    \"airline\": \"Ryanair\"\n}",
+                            "options": {
+                                "raw": { "language": "json" }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/planes",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "planes"]
+                        },
+                        "description": "Creates a new plane record. Both `model` and `airline` are required and must be non-empty strings.\n\nThe `id` is auto-generated as `count(planes) + 1`.\n\n### Request Body\n```json\n{\n  \"model\": \"Boeing 737-800\",   // required\n  \"airline\": \"Ryanair\"         // required\n}\n```\n\n### Response 201 Created\n```json\n{\n  \"id\": 5,\n  \"model\": \"Boeing 737-800\",\n  \"airline\": \"Ryanair\"\n}\n```\n\n### Response 400 — Invalid JSON\n```json\n{ \"error\": \"Invalid JSON format\" }\n```\n\n### Response 400 — Missing fields\n```json\n{\n  \"error\": \"Validation failed\",\n  \"details\": \"Fields \\\"model\\\" and \\\"airline\\\" are required\"\n}\n```\n\n### Response 500 — Server error\n```json\n{ \"error\": \"Server error\" }\n```"
+                    },
+                    "response": [
+                        {
+                            "name": "201 Created — Plane created successfully",
+                            "status": "Created",
+                            "code": 201,
+                            "header": [{ "key": "Content-Type", "value": "application/json" }],
+                            "_postman_previewlanguage": "json",
+                            "originalRequest": {
+                                "method": "POST",
+                                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"model\": \"Boeing 737-800\",\n    \"airline\": \"Ryanair\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/planes",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "planes"]
+                                }
+                            },
+                            "body": "{\n  \"id\": 5,\n  \"model\": \"Boeing 737-800\",\n  \"airline\": \"Ryanair\"\n}"
+                        },
+                        {
+                            "name": "400 Bad Request — Invalid JSON",
+                            "status": "Bad Request",
+                            "code": 400,
+                            "header": [{ "key": "Content-Type", "value": "application/json" }],
+                            "_postman_previewlanguage": "json",
+                            "originalRequest": {
+                                "method": "POST",
+                                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                                "body": { "mode": "raw", "raw": "{ invalid json }" },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/planes",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "planes"]
+                                }
+                            },
+                            "body": "{\n  \"error\": \"Invalid JSON format\"\n}"
+                        },
+                        {
+                            "name": "400 Bad Request — Validation failed (missing fields)",
+                            "status": "Bad Request",
+                            "code": 400,
+                            "header": [{ "key": "Content-Type", "value": "application/json" }],
+                            "_postman_previewlanguage": "json",
+                            "originalRequest": {
+                                "method": "POST",
+                                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                                "body": { "mode": "raw", "raw": "{\n    \"model\": \"Boeing 737-800\"\n}" },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/planes",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "planes"]
+                                }
+                            },
+                            "body": "{\n  \"error\": \"Validation failed\",\n  \"details\": \"Fields \\\"model\\\" and \\\"airline\\\" are required\"\n}"
+                        },
+                        {
+                            "name": "500 Internal Server Error",
+                            "status": "Internal Server Error",
+                            "code": 500,
+                            "header": [{ "key": "Content-Type", "value": "application/json" }],
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"error\": \"Server error\"\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Get plane by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/planes/:id",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "planes", ":id"],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "1",
+                                    "description": "Integer — unique plane identifier"
+                                }
+                            ]
+                        },
+                        "description": "Returns a single plane record by its integer ID.\n\n### Path Parameter\n| Name | Type | Required | Description |\n|------|------|----------|-------------|\n| id | integer | yes | Unique plane ID |\n\n### Response 200 OK\n```json\n{\n  \"id\": 1,\n  \"model\": \"Boeing 747\",\n  \"airline\": \"Ukraine International\"\n}\n```\n\n### Response 404 Not Found\n```json\n{\n  \"error\": \"Resource not found\",\n  \"message\": \"Plane with ID 99 does not exist\"\n}\n```"
+                    },
+                    "response": [
+                        {
+                            "name": "200 OK — Plane found",
+                            "status": "OK",
+                            "code": 200,
+                            "header": [{ "key": "Content-Type", "value": "application/json" }],
+                            "_postman_previewlanguage": "json",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/planes/1",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "planes", "1"]
+                                }
+                            },
+                            "body": "{\n  \"id\": 1,\n  \"model\": \"Boeing 747\",\n  \"airline\": \"Ukraine International\"\n}"
+                        },
+                        {
+                            "name": "404 Not Found — Plane does not exist",
+                            "status": "Not Found",
+                            "code": 404,
+                            "header": [{ "key": "Content-Type", "value": "application/json" }],
+                            "_postman_previewlanguage": "json",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/planes/99",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "planes", "99"]
+                                }
+                            },
+                            "body": "{\n  \"error\": \"Resource not found\",\n  \"message\": \"Plane with ID 99 does not exist\"\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Update plane (PUT — full update)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"model\": \"Boeing 747-800 Updated\",\n    \"airline\": \"Ukraine International\"\n}",
+                            "options": {
+                                "raw": { "language": "json" }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/planes/:id",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "planes", ":id"],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "1",
+                                    "description": "Integer — ID of the plane to update"
+                                }
+                            ]
+                        },
+                        "description": "Fully replaces all fields of an existing plane. Both `model` and `airline` should be provided.\n\nInternally uses `array_merge(existingPlane, requestData)` — fields not sent retain their previous values.\n\n### Path Parameter\n| Name | Type | Required | Description |\n|------|------|----------|-------------|\n| id | integer | yes | ID of the plane to update |\n\n### Request Body\n```json\n{\n  \"model\": \"Boeing 747-800 Updated\",\n  \"airline\": \"Ukraine International\"\n}\n```\n\n### Response 200 OK\n```json\n{\n  \"message\": \"Plane 1 updated successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"model\": \"Boeing 747-800 Updated\",\n    \"airline\": \"Ukraine International\"\n  }\n}\n```\n\n### Response 400 Bad Request — empty body\n```json\n{ \"error\": \"No data provided\" }\n```\n\n### Response 404 Not Found\n```json\n{ \"error\": \"Plane not found\" }\n```"
+                    },
+                    "response": [
+                        {
+                            "name": "200 OK — Plane updated",
+                            "status": "OK",
+                            "code": 200,
+                            "header": [{ "key": "Content-Type", "value": "application/json" }],
+                            "_postman_previewlanguage": "json",
+                            "originalRequest": {
+                                "method": "PUT",
+                                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"model\": \"Boeing 747-800 Updated\",\n    \"airline\": \"Ukraine International\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/planes/1",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "planes", "1"]
+                                }
+                            },
+                            "body": "{\n  \"message\": \"Plane 1 updated successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"model\": \"Boeing 747-800 Updated\",\n    \"airline\": \"Ukraine International\"\n  }\n}"
+                        },
+                        {
+                            "name": "400 Bad Request — No data provided",
+                            "status": "Bad Request",
+                            "code": 400,
+                            "header": [{ "key": "Content-Type", "value": "application/json" }],
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"error\": \"No data provided\"\n}"
+                        },
+                        {
+                            "name": "404 Not Found — Plane does not exist",
+                            "status": "Not Found",
+                            "code": 404,
+                            "header": [{ "key": "Content-Type", "value": "application/json" }],
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"error\": \"Plane not found\"\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Update plane (PATCH — partial update)",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"airline\": \"Wizz Air\"\n}",
+                            "options": {
+                                "raw": { "language": "json" }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/planes/:id",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "planes", ":id"],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "1",
+                                    "description": "Integer — ID of the plane to partially update"
+                                }
+                            ]
+                        },
+                        "description": "Partially updates one or more fields of an existing plane. Only send the fields you want to change — unspecified fields keep their current values.\n\nHandled by the same controller action as PUT.\n\n### Request Body (partial)\n```json\n{\n  \"airline\": \"Wizz Air\"\n}\n```\n\n### Response 200 OK\n```json\n{\n  \"message\": \"Plane 1 updated successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"model\": \"Boeing 747\",\n    \"airline\": \"Wizz Air\"\n  }\n}\n```"
+                    },
+                    "response": [
+                        {
+                            "name": "200 OK — Partial update applied",
+                            "status": "OK",
+                            "code": 200,
+                            "header": [{ "key": "Content-Type", "value": "application/json" }],
+                            "_postman_previewlanguage": "json",
+                            "originalRequest": {
+                                "method": "PATCH",
+                                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                                "body": { "mode": "raw", "raw": "{\n    \"airline\": \"Wizz Air\"\n}" },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/planes/1",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "planes", "1"]
+                                }
+                            },
+                            "body": "{\n  \"message\": \"Plane 1 updated successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"model\": \"Boeing 747\",\n    \"airline\": \"Wizz Air\"\n  }\n}"
+                        },
+                        {
+                            "name": "404 Not Found — Plane does not exist",
+                            "status": "Not Found",
+                            "code": 404,
+                            "header": [{ "key": "Content-Type", "value": "application/json" }],
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"error\": \"Plane not found\"\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Delete a plane",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/planes/:id",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "planes", ":id"],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "2",
+                                    "description": "Integer — ID of the plane to delete"
+                                }
+                            ]
+                        },
+                        "description": "Permanently removes a plane record from the system. This action is irreversible.\n\n⚠️ Current implementation does not persist deletion (in-memory only).\n\n### Path Parameter\n| Name | Type | Required | Description |\n|------|------|----------|-------------|\n| id | integer | yes | ID of the plane to delete |\n\n### Response 200 OK\n```json\n{\n  \"message\": \"Plane 2 has been deleted\"\n}\n```\n\n### Response 404 Not Found\n```json\n{\n  \"error\": \"Plane not found\"\n}\n```"
+                    },
+                    "response": [
+                        {
+                            "name": "200 OK — Plane deleted",
+                            "status": "OK",
+                            "code": 200,
+                            "header": [{ "key": "Content-Type", "value": "application/json" }],
+                            "_postman_previewlanguage": "json",
+                            "originalRequest": {
+                                "method": "DELETE",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/planes/2",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "planes", "2"]
+                                }
+                            },
+                            "body": "{\n  \"message\": \"Plane 2 has been deleted\"\n}"
+                        },
+                        {
+                            "name": "404 Not Found — Plane does not exist",
+                            "status": "Not Found",
+                            "code": 404,
+                            "header": [{ "key": "Content-Type", "value": "application/json" }],
+                            "_postman_previewlanguage": "json",
+                            "originalRequest": {
+                                "method": "DELETE",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/planes/99",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "planes", "99"]
+                                }
+                            },
+                            "body": "{\n  \"error\": \"Plane not found\"\n}"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
