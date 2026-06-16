@@ -2,7 +2,7 @@
     "info": {
         "_postman_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
         "name": "Airport API (Laravel)",
-        "description": "Full CRUD API for managing airport planes.\n\n## Framework\nLaravel — routes defined in `routes/web.php` under `/api` prefix.\n\n## Data Model: Plane\n| Field | Type | Required | Description |\n|-------|------|----------|-------------|\n| id | integer | auto | Unique identifier (auto-generated) |\n| model | string | yes | Aircraft model name |\n| airline | string | yes | Airline company name |\n\n## Status Codes\n| Code | Meaning |\n|------|---------|\n| `200` | OK — request successful |\n| `201` | Created — resource created |\n| `400` | Bad Request — empty/invalid JSON or missing fields |\n| `404` | Not Found — resource does not exist |\n| `500` | Internal Server Error — unexpected error |\n\n## Seed Data (in-memory)\nThe controller starts with 4 pre-loaded planes:\n| ID | Model | Airline |\n|----|-------|---------|\n| 1 | Boeing 747 | Ukraine International |\n| 2 | Airbus A320 | Wizz Air |\n| 3 | Antonov 225 | Antonov Dream Airlines |\n| 4 | Antonov 124 | Antonov Dream Airlines |\n\n⚠️ Data is stored in-memory (`private array $planes`) — all changes reset on server restart. No database integration in current implementation.",
+        "description": "# Airport Planes API — Laravel\n\nПовноцінний REST API для управління реєстром літаків аеропорту, реалізований на Laravel.\n\n---\n\n## Технічний стек\n\n| Параметр | Значення |\n|----------|----------|\n| Фреймворк | Laravel 11+ |\n| Мова | PHP 8.2+ |\n| Контролер | `App\\Http\\Controllers\\PlaneController` |\n| Файл маршрутів | `routes/web.php` |\n| Префікс маршрутів | `/api` через `Route::prefix('api')` |\n| JSON-парсинг | `$request->json()->all()` |\n| Сховище | In-memory масив (без БД) |\n\n---\n\n## Модель даних: Plane\n\n| Поле | Тип | Обов'язкове | Опис |\n|------|-----|-------------|------|\n| `id` | integer | авто | Унікальний ідентифікатор (генерується як `count($planes) + 1`) |\n| `model` | string | ✅ так | Модель літака (назва виробника та серія) |\n| `airline` | string | ✅ так | Назва авіакомпанії |\n\n---\n\n## HTTP Статус-коди\n\n| Код | Статус | Коли повертається |\n|-----|--------|-------------------|\n| `200` | OK | Успішний GET, PUT/PATCH, DELETE |\n| `201` | Created | Успішне створення через POST |\n| `400` | Bad Request | Порожнє тіло, невалідний JSON, або відсутні обов'язкові поля |\n| `404` | Not Found | Літак з вказаним ID не існує |\n| `500` | Internal Server Error | Непередбачена помилка на сервері |\n\n---\n\n## Початкові дані (seed)\n\nКонтролер ініціалізується з 4 записами в пам'яті:\n\n| ID | Модель | Авіакомпанія |\n|----|--------|---------------|\n| 1 | Boeing 747 | Ukraine International |\n| 2 | Airbus A320 | Wizz Air |\n| 3 | Antonov 225 | Antonov Dream Airlines |\n| 4 | Antonov 124 | Antonov Dream Airlines |\n\n> ⚠️ Дані зберігаються в `private array $planes` всередині контролера. Усі зміни (створення, оновлення, видалення) скидаються при перезапуску сервера.\n\n---\n\n## Важливо для Laravel\n\nДо запитів, які можуть повертати помилки, додавайте заголовок:\n```\nAccept: application/json\n```\nБез нього Laravel може повернути HTML-сторінку замість JSON при помилці 404/500.\n\n---\n\n## Запуск\n\n```bash\ncomposer install\ncp .env.example .env\nphp artisan key:generate\nphp artisan serve\n```\nСервер запуститься на `http://localhost:8000`.",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "variable": [
@@ -10,25 +10,31 @@
             "key": "baseUrl",
             "value": "http://localhost:8000",
             "type": "string",
-            "description": "Base URL for Laravel dev server. Start with: php artisan serve"
+            "description": "Базова URL-адреса Laravel-сервера. Запуск: php artisan serve"
         }
     ],
     "item": [
         {
             "name": "Planes",
-            "description": "CRUD operations for airplane records",
+            "description": "# CRUD операції з літаками\n\nПовний набір ендпоінтів для управління реєстром літаків.\n\n| Метод | Маршрут | Дія | Контролер |\n|-------|---------|-----|-----------|\n| GET | `/api/planes` | Список усіх літаків | `index()` |\n| POST | `/api/planes` | Створити новий літак | `create()` |\n| GET | `/api/planes/{id}` | Отримати літак за ID | `show()` |\n| PUT | `/api/planes/{id}` | Повне оновлення літака | `update()` |\n| PATCH | `/api/planes/{id}` | Часткове оновлення літака | `update()` |\n| DELETE | `/api/planes/{id}` | Видалити літак | `delete()` |",
             "item": [
                 {
                     "name": "List all planes",
                     "request": {
                         "method": "GET",
-                        "header": [],
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
                         "url": {
                             "raw": "{{baseUrl}}/api/planes",
                             "host": ["{{baseUrl}}"],
                             "path": ["api", "planes"]
                         },
-                        "description": "Returns an array of all planes currently in the system.\n\n**Route:** `GET /api/planes` → `PlaneController@index`\n\nNo parameters, no request body required.\n\n---\n\n### ✅ Response 200 OK\nReturns a `status` field and a `data` array of all plane objects.\n```json\n{\n  \"status\": \"success\",\n  \"data\": [\n    { \"id\": 1, \"model\": \"Boeing 747\", \"airline\": \"Ukraine International\" },\n    { \"id\": 2, \"model\": \"Airbus A320\", \"airline\": \"Wizz Air\" },\n    { \"id\": 3, \"model\": \"Antonov 225\", \"airline\": \"Antonov Dream Airlines\" },\n    { \"id\": 4, \"model\": \"Antonov 124\", \"airline\": \"Antonov Dream Airlines\" }\n  ]\n}\n```"
+                        "description": "# GET /api/planes — Список усіх літаків\n\n**Контролер:** `PlaneController@index`\n**Маршрут:** `Route::get('/planes', [PlaneController::class, 'index'])`\n\nПовертає масив усіх літаків, зареєстрованих у системі. Параметри та тіло запиту не потрібні.\n\n---\n\n## Заголовки запиту\n\n| Заголовок | Значення | Обов'язковий |\n|-----------|----------|---------------|\n| `Accept` | `application/json` | Рекомендовано |\n\n---\n\n## Параметри\n\nВідсутні — ендпоінт не приймає жодних query-параметрів, path-параметрів або тіла запиту.\n\n---\n\n## Відповіді\n\n### ✅ 200 OK — Успішно\n\nПовертає об'єкт з полем `status: \"success\"` та масивом `data` усіх літаків.\n\n```json\n{\n  \"status\": \"success\",\n  \"data\": [\n    { \"id\": 1, \"model\": \"Boeing 747\", \"airline\": \"Ukraine International\" },\n    { \"id\": 2, \"model\": \"Airbus A320\", \"airline\": \"Wizz Air\" },\n    { \"id\": 3, \"model\": \"Antonov 225\", \"airline\": \"Antonov Dream Airlines\" },\n    { \"id\": 4, \"model\": \"Antonov 124\", \"airline\": \"Antonov Dream Airlines\" }\n  ]\n}\n```\n\n| Поле | Тип | Опис |\n|------|-----|------|\n| `status` | string | Завжди `\"success\"` для цього ендпоінту |\n| `data` | array | Масив об'єктів Plane (може бути порожнім `[]`) |"
                     },
                     "response": [
                         {
@@ -39,7 +45,7 @@
                             "_postman_previewlanguage": "json",
                             "originalRequest": {
                                 "method": "GET",
-                                "header": [],
+                                "header": [{ "key": "Accept", "value": "application/json" }],
                                 "url": {
                                     "raw": "{{baseUrl}}/api/planes",
                                     "host": ["{{baseUrl}}"],
@@ -78,7 +84,7 @@
                             "host": ["{{baseUrl}}"],
                             "path": ["api", "planes"]
                         },
-                        "description": "Creates a new plane record.\n\n**Route:** `POST /api/planes` → `PlaneController@create`\n\nLaravel parses the JSON body automatically via `$request->json()->all()`.\nThe `id` is auto-generated as `count($planes) + 1`.\n\n---\n\n### 📥 Request Body\n| Field | Type | Required | Description |\n|-------|------|----------|-------------|\n| model | string | ✅ yes | Aircraft model name |\n| airline | string | ✅ yes | Airline company name |\n\n```json\n{\n  \"model\": \"Boeing 737-800\",\n  \"airline\": \"Ryanair\"\n}\n```\n\n---\n\n### ✅ Response 201 Created\nReturns the newly created plane object.\n```json\n{\n  \"id\": 5,\n  \"model\": \"Boeing 737-800\",\n  \"airline\": \"Ryanair\"\n}\n```\n\n### ❌ Response 400 — Empty or unparseable body\n```json\n{ \"error\": \"Invalid JSON format\" }\n```\n\n### ❌ Response 400 — Missing required fields\n```json\n{\n  \"error\": \"Validation failed\",\n  \"details\": \"Fields \\\"model\\\" and \\\"airline\\\" are required\"\n}\n```\n\n### ❌ Response 500 — Unexpected server error\n```json\n{ \"error\": \"Server error\" }\n```"
+                        "description": "# POST /api/planes — Створити новий літак\n\n**Контролер:** `PlaneController@create`\n**Маршрут:** `Route::post('/planes', [PlaneController::class, 'create'])`\n\nСтворює новий запис літака в системі. Laravel автоматично розпізнає JSON-тіло через `$request->json()->all()`. ID генерується автоматично як `count($planes) + 1`.\n\n---\n\n## Заголовки запиту\n\n| Заголовок | Значення | Обов'язковий |\n|-----------|----------|---------------|\n| `Content-Type` | `application/json` | ✅ Так |\n| `Accept` | `application/json` | Рекомендовано |\n\n---\n\n## Тіло запиту (JSON)\n\n| Поле | Тип | Обов'язкове | Опис |\n|------|-----|-------------|------|\n| `model` | string | ✅ Так | Модель літака. Не може бути порожнім рядком |\n| `airline` | string | ✅ Так | Авіакомпанія. Не може бути порожнім рядком |\n\n```json\n{\n  \"model\": \"Boeing 737-800\",\n  \"airline\": \"Ryanair\"\n}\n```\n\n> ❌ Поле `id` не приймається із запиту — воно генерується автоматично.\n\n---\n\n## Відповіді\n\n### ✅ 201 Created — Літак створено\n\nПовертає об'єкт новоствореного літака з присвоєним ID.\n\n```json\n{\n  \"id\": 5,\n  \"model\": \"Boeing 737-800\",\n  \"airline\": \"Ryanair\"\n}\n```\n\n| Поле | Тип | Опис |\n|------|-----|------|\n| `id` | integer | Автоматично згенерований ідентифікатор |\n| `model` | string | Модель з тіла запиту |\n| `airline` | string | Авіакомпанія з тіла запиту |\n\n---\n\n### ❌ 400 Bad Request — Порожнє або невалідне тіло\n\nТіло запиту відсутнє, не є JSON, або `$request->json()->all()` повернув порожній масив.\n\n```json\n{ \"error\": \"Invalid JSON format\" }\n```\n\n---\n\n### ❌ 400 Bad Request — Відсутні обов'язкові поля\n\nОдне або обидва поля (`model`, `airline`) відсутні або є порожнім рядком.\n\n```json\n{\n  \"error\": \"Validation failed\",\n  \"details\": \"Fields \\\"model\\\" and \\\"airline\\\" are required\"\n}\n```\n\n---\n\n### ❌ 500 Internal Server Error — Непередбачена помилка\n\nВиняток перехоплено блоком `catch (\\Exception $e)`.\n\n```json\n{ \"error\": \"Server error\" }\n```"
                     },
                     "response": [
                         {
@@ -181,11 +187,11 @@
                                 {
                                     "key": "id",
                                     "value": "1",
-                                    "description": "integer — unique plane identifier"
+                                    "description": "integer — унікальний ідентифікатор літака"
                                 }
                             ]
                         },
-                        "description": "Returns a single plane record by its integer ID.\n\n**Route:** `GET /api/planes/{id}` → `PlaneController@show`\n\n---\n\n### 📥 Path Parameter\n| Name | Type | Required | Description |\n|------|------|----------|-------------|\n| id | integer | ✅ yes | Unique plane ID |\n\n---\n\n### ✅ Response 200 OK\nReturns the plane object directly (no wrapper).\n```json\n{\n  \"id\": 1,\n  \"model\": \"Boeing 747\",\n  \"airline\": \"Ukraine International\"\n}\n```\n\n### ❌ Response 404 Not Found\n```json\n{\n  \"error\": \"Resource not found\",\n  \"message\": \"Plane with ID 99 does not exist\"\n}\n```"
+                        "description": "# GET /api/planes/{id} — Отримати літак за ID\n\n**Контролер:** `PlaneController@show`\n**Маршрут:** `Route::get('/planes/{id}', [PlaneController::class, 'show'])`\n\nПовертає детальну інформацію про один конкретний літак за його числовим ідентифікатором. Пошук виконується методом `findPlaneById(int $id)` — перебір масиву з порівнянням `===`.\n\n---\n\n## Заголовки запиту\n\n| Заголовок | Значення | Обов'язковий |\n|-----------|----------|---------------|\n| `Accept` | `application/json` | Рекомендовано |\n\n---\n\n## Path-параметри\n\n| Параметр | Тип | Обов'язковий | Опис |\n|----------|-----|--------------|------|\n| `id` | integer | ✅ Так | Унікальний числовий ID літака |\n\n> ⚠️ Якщо передано нечислове значення (наприклад, `abc`), Laravel поверне помилку маршрутизації на рівні фреймворку.\n\n---\n\n## Відповіді\n\n### ✅ 200 OK — Літак знайдено\n\nПовертає об'єкт літака **без обгортки** (прямо, без поля `status` або `data`).\n\n```json\n{\n  \"id\": 1,\n  \"model\": \"Boeing 747\",\n  \"airline\": \"Ukraine International\"\n}\n```\n\n| Поле | Тип | Опис |\n|------|-----|------|\n| `id` | integer | Ідентифікатор літака |\n| `model` | string | Модель літака |\n| `airline` | string | Авіакомпанія |\n\n---\n\n### ❌ 404 Not Found — Літак не існує\n\nЛітак з вказаним ID відсутній у масиві `$planes`.\n\n```json\n{\n  \"error\": \"Resource not found\",\n  \"message\": \"Plane with ID 99 does not exist\"\n}\n```\n\n| Поле | Тип | Опис |\n|------|-----|------|\n| `error` | string | Короткий код помилки |\n| `message` | string | Детальне повідомлення з ID, який не знайдено |"
                     },
                     "response": [
                         {
@@ -255,11 +261,11 @@
                                 {
                                     "key": "id",
                                     "value": "1",
-                                    "description": "integer — ID of the plane to update"
+                                    "description": "integer — ID літака для оновлення"
                                 }
                             ]
                         },
-                        "description": "Fully updates all fields of an existing plane. Send both `model` and `airline`.\n\n**Route:** `PUT /api/planes/{id}` → `PlaneController@update`\n\nLaravel accepts this via `Route::match(['put', 'patch'], ...)`. Internally uses `array_merge($plane, $data)` — fields omitted from the request retain their previous values.\n\n---\n\n### 📥 Path Parameter\n| Name | Type | Required | Description |\n|------|------|----------|-------------|\n| id | integer | ✅ yes | ID of the plane to update |\n\n### 📥 Request Body\n| Field | Type | Required | Description |\n|-------|------|----------|-------------|\n| model | string | recommended | New aircraft model |\n| airline | string | recommended | New airline name |\n\n```json\n{\n  \"model\": \"Boeing 747-800 Updated\",\n  \"airline\": \"Ukraine International\"\n}\n```\n\n---\n\n### ✅ Response 200 OK\nReturns a message and the merged (updated) plane object.\n```json\n{\n  \"message\": \"Plane 1 updated successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"model\": \"Boeing 747-800 Updated\",\n    \"airline\": \"Ukraine International\"\n  }\n}\n```\n\n### ❌ Response 400 — Empty body\n```json\n{ \"error\": \"No data provided\" }\n```\n\n### ❌ Response 404 Not Found\n```json\n{ \"error\": \"Plane not found\" }\n```"
+                        "description": "# PUT /api/planes/{id} — Повне оновлення літака\n\n**Контролер:** `PlaneController@update`\n**Маршрут:** `Route::match(['put', 'patch'], '/planes/{id}', [PlaneController::class, 'update'])`\n\nПовністю оновлює запис літака. Рекомендується передавати обидва поля (`model` та `airline`). Оновлення виконується через `array_merge($plane, $data)` — поля, не надіслані в запиті, зберігають попередні значення.\n\n---\n\n## Заголовки запиту\n\n| Заголовок | Значення | Обов'язковий |\n|-----------|----------|---------------|\n| `Content-Type` | `application/json` | ✅ Так |\n| `Accept` | `application/json` | Рекомендовано |\n\n---\n\n## Path-параметри\n\n| Параметр | Тип | Обов'язковий | Опис |\n|----------|-----|--------------|------|\n| `id` | integer | ✅ Так | ID літака, який потрібно оновити |\n\n---\n\n## Тіло запиту (JSON)\n\n| Поле | Тип | Обов'язкове | Опис |\n|------|-----|-------------|------|\n| `model` | string | Рекомендовано | Нова модель літака |\n| `airline` | string | Рекомендовано | Нова авіакомпанія |\n\n```json\n{\n  \"model\": \"Boeing 747-800 Updated\",\n  \"airline\": \"Ukraine International\"\n}\n```\n\n> ⚠️ Передача поля `id` у тілі запиту перезапише ID в результаті `array_merge`, проте реального збереження не відбувається (in-memory).\n\n---\n\n## Відповіді\n\n### ✅ 200 OK — Літак оновлено\n\nПовертає повідомлення про успіх та оновлений об'єкт літака (результат `array_merge` старих і нових даних).\n\n```json\n{\n  \"message\": \"Plane 1 updated successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"model\": \"Boeing 747-800 Updated\",\n    \"airline\": \"Ukraine International\"\n  }\n}\n```\n\n| Поле | Тип | Опис |\n|------|-----|------|\n| `message` | string | Підтвердження з ID оновленого літака |\n| `data` | object | Повний об'єкт літака після оновлення |\n| `data.id` | integer | ID літака (незмінний) |\n| `data.model` | string | Нова або попередня модель |\n| `data.airline` | string | Нова або попередня авіакомпанія |\n\n---\n\n### ❌ 400 Bad Request — Порожнє тіло\n\nТіло запиту відсутнє або `$request->json()->all()` повернув порожній масив.\n\n```json\n{ \"error\": \"No data provided\" }\n```\n\n---\n\n### ❌ 404 Not Found — Літак не знайдено\n\nЛітак з вказаним ID відсутній у масиві `$planes`.\n\n```json\n{ \"error\": \"Plane not found\" }\n```"
                     },
                     "response": [
                         {
@@ -366,11 +372,11 @@
                                 {
                                     "key": "id",
                                     "value": "1",
-                                    "description": "integer — ID of the plane to partially update"
+                                    "description": "integer — ID літака для часткового оновлення"
                                 }
                             ]
                         },
-                        "description": "Partially updates one or more fields of an existing plane. Only the fields included in the request body will be changed — all others retain their current values.\n\n**Route:** `PATCH /api/planes/{id}` → `PlaneController@update`\n\nHandled by the same controller method as PUT (`Route::match(['put', 'patch'], ...)`).\n\n---\n\n### 📥 Path Parameter\n| Name | Type | Required | Description |\n|------|------|----------|-------------|\n| id | integer | ✅ yes | ID of the plane to update |\n\n### 📥 Request Body (send only fields to change)\n```json\n{ \"airline\": \"Wizz Air\" }\n```\n\n---\n\n### ✅ Response 200 OK\nReturns the merged result — unchanged fields keep their original values.\n```json\n{\n  \"message\": \"Plane 1 updated successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"model\": \"Boeing 747\",\n    \"airline\": \"Wizz Air\"\n  }\n}\n```\n\n### ❌ Response 400 — Empty body\n```json\n{ \"error\": \"No data provided\" }\n```\n\n### ❌ Response 404 Not Found\n```json\n{ \"error\": \"Plane not found\" }\n```"
+                        "description": "# PATCH /api/planes/{id} — Часткове оновлення літака\n\n**Контролер:** `PlaneController@update`\n**Маршрут:** `Route::match(['put', 'patch'], '/planes/{id}', [PlaneController::class, 'update'])`\n\nЧасткове оновлення одного або кількох полів існуючого літака. Надсилайте лише ті поля, які потрібно змінити — решта збереже попередні значення завдяки `array_merge($plane, $data)`.\n\nОбробляється тим самим методом контролера, що і PUT. Різниця — семантична: PATCH означає часткову зміну.\n\n---\n\n## Заголовки запиту\n\n| Заголовок | Значення | Обов'язковий |\n|-----------|----------|---------------|\n| `Content-Type` | `application/json` | ✅ Так |\n| `Accept` | `application/json` | Рекомендовано |\n\n---\n\n## Path-параметри\n\n| Параметр | Тип | Обов'язковий | Опис |\n|----------|-----|--------------|------|\n| `id` | integer | ✅ Так | ID літака, який потрібно оновити |\n\n---\n\n## Тіло запиту (JSON)\n\nНадсилайте лише ті поля, які змінюються:\n\n| Поле | Тип | Обов'язкове | Опис |\n|------|-----|-------------|------|\n| `model` | string | Ні | Нова модель літака (якщо змінюється) |\n| `airline` | string | Ні | Нова авіакомпанія (якщо змінюється) |\n\n```json\n{ \"airline\": \"Wizz Air\" }\n```\n\n> ℹ️ Мінімум одне поле повинно бути присутнє. Порожнє тіло поверне 400.\n\n---\n\n## Відповіді\n\n### ✅ 200 OK — Часткове оновлення застосовано\n\nПовертає повідомлення та результат злиття — незмінені поля зберігають попередні значення.\n\n```json\n{\n  \"message\": \"Plane 1 updated successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"model\": \"Boeing 747\",\n    \"airline\": \"Wizz Air\"\n  }\n}\n```\n\n| Поле | Тип | Опис |\n|------|-----|------|\n| `message` | string | Підтвердження з ID оновленого літака |\n| `data.id` | integer | Незмінний ID |\n| `data.model` | string | Попереднє значення (не надсилалось у запиті) |\n| `data.airline` | string | Нове значення з тіла запиту |\n\n---\n\n### ❌ 400 Bad Request — Порожнє тіло\n\n```json\n{ \"error\": \"No data provided\" }\n```\n\n---\n\n### ❌ 404 Not Found — Літак не знайдено\n\n```json\n{ \"error\": \"Plane not found\" }\n```"
                     },
                     "response": [
                         {
@@ -404,6 +410,19 @@
                             "code": 400,
                             "header": [{ "key": "Content-Type", "value": "application/json" }],
                             "_postman_previewlanguage": "json",
+                            "originalRequest": {
+                                "method": "PATCH",
+                                "header": [
+                                    { "key": "Content-Type", "value": "application/json" },
+                                    { "key": "Accept", "value": "application/json" }
+                                ],
+                                "body": { "mode": "raw", "raw": "" },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/planes/1",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "planes", "1"]
+                                }
+                            },
                             "body": "{\n  \"error\": \"No data provided\"\n}"
                         },
                         {
@@ -412,6 +431,19 @@
                             "code": 404,
                             "header": [{ "key": "Content-Type", "value": "application/json" }],
                             "_postman_previewlanguage": "json",
+                            "originalRequest": {
+                                "method": "PATCH",
+                                "header": [
+                                    { "key": "Content-Type", "value": "application/json" },
+                                    { "key": "Accept", "value": "application/json" }
+                                ],
+                                "body": { "mode": "raw", "raw": "{\n    \"airline\": \"Wizz Air\"\n}" },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/planes/99",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "planes", "99"]
+                                }
+                            },
                             "body": "{\n  \"error\": \"Plane not found\"\n}"
                         }
                     ]
@@ -435,11 +467,11 @@
                                 {
                                     "key": "id",
                                     "value": "2",
-                                    "description": "integer — ID of the plane to delete"
+                                    "description": "integer — ID літака для видалення"
                                 }
                             ]
                         },
-                        "description": "Permanently removes a plane record from the system by its ID.\n\n**Route:** `DELETE /api/planes/{id}` → `PlaneController@delete`\n\n⚠️ This action is irreversible. Current implementation does not persist deletion (in-memory only — resets on server restart).\n\n---\n\n### 📥 Path Parameter\n| Name | Type | Required | Description |\n|------|------|----------|-------------|\n| id | integer | ✅ yes | ID of the plane to delete |\n\n---\n\n### ✅ Response 200 OK\n```json\n{\n  \"message\": \"Plane 2 has been deleted\"\n}\n```\n\n### ❌ Response 404 Not Found\n```json\n{\n  \"error\": \"Plane not found\"\n}\n```"
+                        "description": "# DELETE /api/planes/{id} — Видалити літак\n\n**Контролер:** `PlaneController@delete`\n**Маршрут:** `Route::delete('/planes/{id}', [PlaneController::class, 'delete'])`\n\nВидаляє запис літака з системи за його ID. Дія незворотна.\n\n> ⚠️ Поточна реалізація не виконує фактичного видалення з постійного сховища — дані зберігаються в `private array $planes` і скидаються при перезапуску сервера. У продакшн-версії необхідна інтеграція з Eloquent ORM та базою даних.\n\n---\n\n## Заголовки запиту\n\n| Заголовок | Значення | Обов'язковий |\n|-----------|----------|---------------|\n| `Accept` | `application/json` | Рекомендовано |\n\n---\n\n## Path-параметри\n\n| Параметр | Тип | Обов'язковий | Опис |\n|----------|-----|--------------|------|\n| `id` | integer | ✅ Так | ID літака, який потрібно видалити |\n\n---\n\n## Тіло запиту\n\nВідсутнє — DELETE-запит не приймає тіла.\n\n---\n\n## Відповіді\n\n### ✅ 200 OK — Літак видалено\n\nПовертає підтверджувальне повідомлення з ID видаленого літака.\n\n```json\n{\n  \"message\": \"Plane 2 has been deleted\"\n}\n```\n\n| Поле | Тип | Опис |\n|------|-----|------|\n| `message` | string | Підтвердження видалення з ID |\n\n> ℹ️ Повертається `200 OK`, а не `204 No Content`, оскільки контролер явно повертає тіло відповіді з повідомленням.\n\n---\n\n### ❌ 404 Not Found — Літак не знайдено\n\nЛітак з вказаним ID відсутній у масиві `$planes` — видалення неможливе.\n\n```json\n{ \"error\": \"Plane not found\" }\n```\n\n| Поле | Тип | Опис |\n|------|-----|------|\n| `error` | string | Повідомлення про відсутність ресурсу |"
                     },
                     "response": [
                         {

@@ -2,7 +2,7 @@
     "info": {
         "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         "name": "Airport API (Symfony)",
-        "description": "Full CRUD API for managing airport planes.\n\n## Data Model: Plane\n| Field | Type | Required | Description |\n|-------|------|----------|-------------|\n| id | integer | auto | Unique identifier (auto-generated) |\n| model | string | yes | Aircraft model name |\n| airline | string | yes | Airline company name |\n\n## Status Codes\n- `200` OK — request successful\n- `201` Created — resource created\n- `400` Bad Request — invalid JSON or missing fields\n- `404` Not Found — resource does not exist\n- `500` Internal Server Error — unexpected server error\n\n## Seed Data (in-memory)\nThe API starts with 4 pre-loaded planes:\n- ID 1: Boeing 747 — Ukraine International\n- ID 2: Airbus A320 — Wizz Air\n- ID 3: Antonov 225 — Antonov Dream Airlines\n- ID 4: Antonov 124 — Antonov Dream Airlines\n\n⚠️ Data is stored in-memory and resets on server restart.",
+        "description": "# Airport Planes API — Symfony\n\nПовноцінний REST API для управління реєстром літаків аеропорту, реалізований на Symfony.\n\n---\n\n## Технічний стек\n\n| Параметр | Значення |\n|----------|----------|\n| Фреймворк | Symfony 7+ |\n| Мова | PHP 8.2+ |\n| Контролер | `App\\Controller\\TestController` |\n| Маршрути | PHP-атрибути `#[Route]` на методах контролера |\n| Префікс маршрутів | `/api` через `#[Route('/api', name: 'api_')]` на класі |\n| JSON-парсинг | `json_decode($request->getContent(), true)` + `json_last_error()` |\n| Сховище | In-memory масив (без БД) |\n\n---\n\n## Модель даних: Plane\n\n| Поле | Тип | Обов'язкове | Опис |\n|------|-----|-------------|------|\n| `id` | integer | авто | Унікальний ідентифікатор (генерується як `count($planes) + 1`) |\n| `model` | string | ✅ так | Модель літака (назва виробника та серія) |\n| `airline` | string | ✅ так | Назва авіакомпанії |\n\n---\n\n## HTTP Статус-коди\n\n| Код | Статус | Коли повертається |\n|-----|--------|-------------------|\n| `200` | OK | Успішний GET, PUT/PATCH, DELETE |\n| `201` | Created | Успішне створення через POST |\n| `400` | Bad Request | Невалідний JSON (`json_last_error()`), або відсутні обов'язкові поля |\n| `404` | Not Found | Літак з вказаним ID не існує |\n| `500` | Internal Server Error | Виняток перехоплено в блоці `catch (\\Exception $e)` |\n\n---\n\n## Початкові дані (seed)\n\nКонтролер ініціалізується з 4 записами в пам'яті (`private array $planes`):\n\n| ID | Модель | Авіакомпанія |\n|----|--------|---------------|\n| 1 | Boeing 747 | Ukraine International |\n| 2 | Airbus A320 | Wizz Air |\n| 3 | Antonov 225 | Antonov Dream Airlines |\n| 4 | Antonov 124 | Antonov Dream Airlines |\n\n> ⚠️ Дані зберігаються в масиві всередині контролера. Усі зміни скидаються при перезапуску сервера.\n\n---\n\n## Запуск\n\n```bash\ncomposer install\nsymfony serve\n# або без Symfony CLI:\nphp -S localhost:8000 -t public/\n```\n\n> ⚠️ `symfony serve` за замовчуванням запускає HTTPS на `https://127.0.0.1:8000`. Використовуйте `symfony serve --no-tls` для HTTP.",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "variable": [
@@ -10,13 +10,13 @@
             "key": "baseUrl",
             "value": "http://localhost:8000",
             "type": "string",
-            "description": "Base URL for Symfony server (symfony serve or php -S localhost:8000/public)"
+            "description": "Базова URL-адреса Symfony-сервера. Запуск: symfony serve --no-tls або php -S localhost:8000 -t public/"
         }
     ],
     "item": [
         {
             "name": "Planes",
-            "description": "CRUD operations for airplane records",
+            "description": "# CRUD операції з літаками\n\nПовний набір ендпоінтів для управління реєстром літаків.\n\n| Метод | Маршрут | Дія | Метод контролера | Атрибут Route |\n|-------|---------|-----|------------------|---------------|\n| GET | `/api/planes` | Список усіх літаків | `index()` | `planes_index` |\n| POST | `/api/planes` | Створити новий літак | `create()` | `planes_create` |\n| GET | `/api/planes/{id}` | Отримати літак за ID | `show()` | `planes_show` |\n| PUT | `/api/planes/{id}` | Повне оновлення | `update()` | `planes_update` |\n| PATCH | `/api/planes/{id}` | Часткове оновлення | `update()` | `planes_update` |\n| DELETE | `/api/planes/{id}` | Видалити літак | `delete()` | `planes_delete` |",
             "item": [
                 {
                     "name": "List all planes",
@@ -28,7 +28,7 @@
                             "host": ["{{baseUrl}}"],
                             "path": ["api", "planes"]
                         },
-                        "description": "Returns an array of all planes in the system.\n\n**No parameters required.**\n\n### Response 200 OK\n```json\n{\n  \"status\": \"success\",\n  \"data\": [\n    { \"id\": 1, \"model\": \"Boeing 747\", \"airline\": \"Ukraine International\" },\n    { \"id\": 2, \"model\": \"Airbus A320\", \"airline\": \"Wizz Air\" },\n    { \"id\": 3, \"model\": \"Antonov 225\", \"airline\": \"Antonov Dream Airlines\" },\n    { \"id\": 4, \"model\": \"Antonov 124\", \"airline\": \"Antonov Dream Airlines\" }\n  ]\n}\n```"
+                        "description": "# GET /api/planes — Список усіх літаків\n\n**Контролер:** `TestController@index`\n**Атрибут:** `#[Route('/planes', name: 'planes_index', methods: ['GET'])]`\n\nПовертає масив усіх літаків, зареєстрованих у системі. Параметри та тіло запиту не потрібні.\n\n---\n\n## Заголовки запиту\n\nНе потрібні — ендпоінт не вимагає жодних заголовків.\n\n---\n\n## Параметри\n\nВідсутні — ендпоінт не приймає жодних query-параметрів, path-параметрів або тіла запиту.\n\n---\n\n## Відповіді\n\n### ✅ 200 OK — Успішно\n\nПовертає об'єкт з полем `status: \"success\"` та масивом `data` усіх літаків.\n\n```json\n{\n  \"status\": \"success\",\n  \"data\": [\n    { \"id\": 1, \"model\": \"Boeing 747\", \"airline\": \"Ukraine International\" },\n    { \"id\": 2, \"model\": \"Airbus A320\", \"airline\": \"Wizz Air\" },\n    { \"id\": 3, \"model\": \"Antonov 225\", \"airline\": \"Antonov Dream Airlines\" },\n    { \"id\": 4, \"model\": \"Antonov 124\", \"airline\": \"Antonov Dream Airlines\" }\n  ]\n}\n```\n\n| Поле | Тип | Опис |\n|------|-----|------|\n| `status` | string | Завжди `\"success\"` для цього ендпоінту |\n| `data` | array | Масив об'єктів Plane (може бути порожнім `[]`) |\n| `data[].id` | integer | Унікальний ідентифікатор літака |\n| `data[].model` | string | Модель літака |\n| `data[].airline` | string | Авіакомпанія |"
                     },
                     "response": [
                         {
@@ -37,6 +37,15 @@
                             "code": 200,
                             "header": [{ "key": "Content-Type", "value": "application/json" }],
                             "_postman_previewlanguage": "json",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/planes",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "planes"]
+                                }
+                            },
                             "body": "{\n  \"status\": \"success\",\n  \"data\": [\n    { \"id\": 1, \"model\": \"Boeing 747\", \"airline\": \"Ukraine International\" },\n    { \"id\": 2, \"model\": \"Airbus A320\", \"airline\": \"Wizz Air\" },\n    { \"id\": 3, \"model\": \"Antonov 225\", \"airline\": \"Antonov Dream Airlines\" },\n    { \"id\": 4, \"model\": \"Antonov 124\", \"airline\": \"Antonov Dream Airlines\" }\n  ]\n}"
                         }
                     ]
@@ -64,7 +73,7 @@
                             "host": ["{{baseUrl}}"],
                             "path": ["api", "planes"]
                         },
-                        "description": "Creates a new plane record. Both `model` and `airline` are required and must be non-empty strings.\n\nThe `id` is auto-generated as `count(planes) + 1`.\n\n### Request Body\n```json\n{\n  \"model\": \"Boeing 737-800\",   // required\n  \"airline\": \"Ryanair\"         // required\n}\n```\n\n### Response 201 Created\n```json\n{\n  \"id\": 5,\n  \"model\": \"Boeing 737-800\",\n  \"airline\": \"Ryanair\"\n}\n```\n\n### Response 400 — Invalid JSON\n```json\n{ \"error\": \"Invalid JSON format\" }\n```\n\n### Response 400 — Missing fields\n```json\n{\n  \"error\": \"Validation failed\",\n  \"details\": \"Fields \\\"model\\\" and \\\"airline\\\" are required\"\n}\n```\n\n### Response 500 — Server error\n```json\n{ \"error\": \"Server error\" }\n```"
+                        "description": "# POST /api/planes — Створити новий літак\n\n**Контролер:** `TestController@create`\n**Атрибут:** `#[Route('/planes', name: 'planes_create', methods: ['POST'])]`\n\nСтворює новий запис літака в системі. Symfony парсить тіло запиту через `json_decode($request->getContent(), true)`. Валідність JSON перевіряється через `json_last_error()`. ID генерується автоматично як `count($planes) + 1`.\n\n---\n\n## Заголовки запиту\n\n| Заголовок | Значення | Обов'язковий |\n|-----------|----------|---------------|\n| `Content-Type` | `application/json` | ✅ Так |\n\n---\n\n## Тіло запиту (JSON)\n\n| Поле | Тип | Обов'язкове | Опис |\n|------|-----|-------------|------|\n| `model` | string | ✅ Так | Модель літака. Не може бути порожнім рядком |\n| `airline` | string | ✅ Так | Авіакомпанія. Не може бути порожнім рядком |\n\n```json\n{\n  \"model\": \"Boeing 737-800\",\n  \"airline\": \"Ryanair\"\n}\n```\n\n> ❌ Поле `id` не приймається із запиту — воно генерується автоматично.\n\n---\n\n## Відповіді\n\n### ✅ 201 Created — Літак створено\n\nПовертає об'єкт новоствореного літака з присвоєним ID.\n\n```json\n{\n  \"id\": 5,\n  \"model\": \"Boeing 737-800\",\n  \"airline\": \"Ryanair\"\n}\n```\n\n| Поле | Тип | Опис |\n|------|-----|------|\n| `id` | integer | Автоматично згенерований ідентифікатор |\n| `model` | string | Модель з тіла запиту |\n| `airline` | string | Авіакомпанія з тіла запиту |\n\n---\n\n### ❌ 400 Bad Request — Невалідний JSON\n\n`json_last_error() !== JSON_ERROR_NONE` — тіло запиту не є валідним JSON.\n\n```json\n{ \"error\": \"Invalid JSON format\" }\n```\n\n---\n\n### ❌ 400 Bad Request — Відсутні обов'язкові поля\n\nОдне або обидва поля (`model`, `airline`) відсутні або є порожнім рядком (`empty()`).\n\n```json\n{\n  \"error\": \"Validation failed\",\n  \"details\": \"Fields \\\"model\\\" and \\\"airline\\\" are required\"\n}\n```\n\n---\n\n### ❌ 500 Internal Server Error — Непередбачена помилка\n\nВиняток перехоплено блоком `catch (\\Exception $e)`.\n\n```json\n{ \"error\": \"Server error\" }\n```"
                     },
                     "response": [
                         {
@@ -78,7 +87,8 @@
                                 "header": [{ "key": "Content-Type", "value": "application/json" }],
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n    \"model\": \"Boeing 737-800\",\n    \"airline\": \"Ryanair\"\n}"
+                                    "raw": "{\n    \"model\": \"Boeing 737-800\",\n    \"airline\": \"Ryanair\"\n}",
+                                    "options": { "raw": { "language": "json" } }
                                 },
                                 "url": {
                                     "raw": "{{baseUrl}}/api/planes",
@@ -115,7 +125,11 @@
                             "originalRequest": {
                                 "method": "POST",
                                 "header": [{ "key": "Content-Type", "value": "application/json" }],
-                                "body": { "mode": "raw", "raw": "{\n    \"model\": \"Boeing 737-800\"\n}" },
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"model\": \"Boeing 737-800\"\n}",
+                                    "options": { "raw": { "language": "json" } }
+                                },
                                 "url": {
                                     "raw": "{{baseUrl}}/api/planes",
                                     "host": ["{{baseUrl}}"],
@@ -147,11 +161,11 @@
                                 {
                                     "key": "id",
                                     "value": "1",
-                                    "description": "Integer — unique plane identifier"
+                                    "description": "integer — унікальний ідентифікатор літака"
                                 }
                             ]
                         },
-                        "description": "Returns a single plane record by its integer ID.\n\n### Path Parameter\n| Name | Type | Required | Description |\n|------|------|----------|-------------|\n| id | integer | yes | Unique plane ID |\n\n### Response 200 OK\n```json\n{\n  \"id\": 1,\n  \"model\": \"Boeing 747\",\n  \"airline\": \"Ukraine International\"\n}\n```\n\n### Response 404 Not Found\n```json\n{\n  \"error\": \"Resource not found\",\n  \"message\": \"Plane with ID 99 does not exist\"\n}\n```"
+                        "description": "# GET /api/planes/{id} — Отримати літак за ID\n\n**Контролер:** `TestController@show`\n**Атрибут:** `#[Route('/planes/{id}', name: 'planes_show', methods: ['GET'])]`\n\nПовертає детальну інформацію про один конкретний літак за його числовим ідентифікатором. Пошук виконується приватним методом `findPlaneById(int $id)` — перебір масиву `$planes` з порівнянням `===`.\n\n---\n\n## Заголовки запиту\n\nНе потрібні — ендпоінт не вимагає жодних заголовків.\n\n---\n\n## Path-параметри\n\n| Параметр | Тип | Обов'язковий | Опис |\n|----------|-----|--------------|------|\n| `id` | integer | ✅ Так | Унікальний числовий ID літака |\n\n> ⚠️ Symfony автоматично типізує `{id}` як `int` завдяки оголошенню `show(int $id)`. Якщо передано нечислове значення — фреймворк поверне помилку маршрутизації.\n\n---\n\n## Відповіді\n\n### ✅ 200 OK — Літак знайдено\n\nПовертає об'єкт літака **без обгортки** (прямо, без поля `status` або `data`).\n\n```json\n{\n  \"id\": 1,\n  \"model\": \"Boeing 747\",\n  \"airline\": \"Ukraine International\"\n}\n```\n\n| Поле | Тип | Опис |\n|------|-----|------|\n| `id` | integer | Ідентифікатор літака |\n| `model` | string | Модель літака |\n| `airline` | string | Авіакомпанія |\n\n---\n\n### ❌ 404 Not Found — Літак не існує\n\n`findPlaneById()` повернув `null` — жоден елемент масиву не співпав з вказаним ID.\n\n```json\n{\n  \"error\": \"Resource not found\",\n  \"message\": \"Plane with ID 99 does not exist\"\n}\n```\n\n| Поле | Тип | Опис |\n|------|-----|------|\n| `error` | string | Короткий код помилки |\n| `message` | string | Детальне повідомлення з конкретним ID, який не знайдено |"
                     },
                     "response": [
                         {
@@ -216,11 +230,11 @@
                                 {
                                     "key": "id",
                                     "value": "1",
-                                    "description": "Integer — ID of the plane to update"
+                                    "description": "integer — ID літака для оновлення"
                                 }
                             ]
                         },
-                        "description": "Fully replaces all fields of an existing plane. Both `model` and `airline` should be provided.\n\nInternally uses `array_merge(existingPlane, requestData)` — fields not sent retain their previous values.\n\n### Path Parameter\n| Name | Type | Required | Description |\n|------|------|----------|-------------|\n| id | integer | yes | ID of the plane to update |\n\n### Request Body\n```json\n{\n  \"model\": \"Boeing 747-800 Updated\",\n  \"airline\": \"Ukraine International\"\n}\n```\n\n### Response 200 OK\n```json\n{\n  \"message\": \"Plane 1 updated successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"model\": \"Boeing 747-800 Updated\",\n    \"airline\": \"Ukraine International\"\n  }\n}\n```\n\n### Response 400 Bad Request — empty body\n```json\n{ \"error\": \"No data provided\" }\n```\n\n### Response 404 Not Found\n```json\n{ \"error\": \"Plane not found\" }\n```"
+                        "description": "# PUT /api/planes/{id} — Повне оновлення літака\n\n**Контролер:** `TestController@update`\n**Атрибут:** `#[Route('/planes/{id}', name: 'planes_update', methods: ['PUT', 'PATCH'])]`\n\nПовністю оновлює запис літака. Рекомендується передавати обидва поля (`model` та `airline`). Оновлення виконується через `array_merge($plane, $data)` — поля, не надіслані в запиті, зберігають попередні значення. JSON парсується через `json_decode($request->getContent(), true)`.\n\n---\n\n## Заголовки запиту\n\n| Заголовок | Значення | Обов'язковий |\n|-----------|----------|---------------|\n| `Content-Type` | `application/json` | ✅ Так |\n\n---\n\n## Path-параметри\n\n| Параметр | Тип | Обов'язковий | Опис |\n|----------|-----|--------------|------|\n| `id` | integer | ✅ Так | ID літака, який потрібно оновити |\n\n---\n\n## Тіло запиту (JSON)\n\n| Поле | Тип | Обов'язкове | Опис |\n|------|-----|-------------|------|\n| `model` | string | Рекомендовано | Нова модель літака |\n| `airline` | string | Рекомендовано | Нова авіакомпанія |\n\n```json\n{\n  \"model\": \"Boeing 747-800 Updated\",\n  \"airline\": \"Ukraine International\"\n}\n```\n\n> ⚠️ Передача поля `id` у тілі запиту перезапише ID в результаті `array_merge`, але реального збереження не відбувається (in-memory).\n\n---\n\n## Відповіді\n\n### ✅ 200 OK — Літак оновлено\n\nПовертає повідомлення про успіх та оновлений об'єкт літака (результат `array_merge` старих і нових даних).\n\n```json\n{\n  \"message\": \"Plane 1 updated successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"model\": \"Boeing 747-800 Updated\",\n    \"airline\": \"Ukraine International\"\n  }\n}\n```\n\n| Поле | Тип | Опис |\n|------|-----|------|\n| `message` | string | Підтвердження з ID оновленого літака |\n| `data` | object | Повний об'єкт літака після оновлення |\n| `data.id` | integer | ID літака (незмінний) |\n| `data.model` | string | Нова або попередня модель |\n| `data.airline` | string | Нова або попередня авіакомпанія |\n\n---\n\n### ❌ 400 Bad Request — Порожнє тіло\n\n`json_decode()` повернув `null` або порожній масив — тіло запиту відсутнє або не є валідним JSON.\n\n```json\n{ \"error\": \"No data provided\" }\n```\n\n---\n\n### ❌ 404 Not Found — Літак не знайдено\n\n`findPlaneById()` повернув `null` — літак з вказаним ID відсутній.\n\n```json\n{ \"error\": \"Plane not found\" }\n```"
                     },
                     "response": [
                         {
@@ -234,7 +248,8 @@
                                 "header": [{ "key": "Content-Type", "value": "application/json" }],
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n    \"model\": \"Boeing 747-800 Updated\",\n    \"airline\": \"Ukraine International\"\n}"
+                                    "raw": "{\n    \"model\": \"Boeing 747-800 Updated\",\n    \"airline\": \"Ukraine International\"\n}",
+                                    "options": { "raw": { "language": "json" } }
                                 },
                                 "url": {
                                     "raw": "{{baseUrl}}/api/planes/1",
@@ -250,6 +265,16 @@
                             "code": 400,
                             "header": [{ "key": "Content-Type", "value": "application/json" }],
                             "_postman_previewlanguage": "json",
+                            "originalRequest": {
+                                "method": "PUT",
+                                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                                "body": { "mode": "raw", "raw": "" },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/planes/1",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "planes", "1"]
+                                }
+                            },
                             "body": "{\n  \"error\": \"No data provided\"\n}"
                         },
                         {
@@ -258,6 +283,20 @@
                             "code": 404,
                             "header": [{ "key": "Content-Type", "value": "application/json" }],
                             "_postman_previewlanguage": "json",
+                            "originalRequest": {
+                                "method": "PUT",
+                                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"model\": \"Boeing 747-800 Updated\",\n    \"airline\": \"Ukraine International\"\n}",
+                                    "options": { "raw": { "language": "json" } }
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/planes/99",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "planes", "99"]
+                                }
+                            },
                             "body": "{\n  \"error\": \"Plane not found\"\n}"
                         }
                     ]
@@ -288,11 +327,11 @@
                                 {
                                     "key": "id",
                                     "value": "1",
-                                    "description": "Integer — ID of the plane to partially update"
+                                    "description": "integer — ID літака для часткового оновлення"
                                 }
                             ]
                         },
-                        "description": "Partially updates one or more fields of an existing plane. Only send the fields you want to change — unspecified fields keep their current values.\n\nHandled by the same controller action as PUT.\n\n### Request Body (partial)\n```json\n{\n  \"airline\": \"Wizz Air\"\n}\n```\n\n### Response 200 OK\n```json\n{\n  \"message\": \"Plane 1 updated successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"model\": \"Boeing 747\",\n    \"airline\": \"Wizz Air\"\n  }\n}\n```"
+                        "description": "# PATCH /api/planes/{id} — Часткове оновлення літака\n\n**Контролер:** `TestController@update`\n**Атрибут:** `#[Route('/planes/{id}', name: 'planes_update', methods: ['PUT', 'PATCH'])]`\n\nЧасткове оновлення одного або кількох полів існуючого літака. Надсилайте лише ті поля, які потрібно змінити — решта збереже попередні значення завдяки `array_merge($plane, $data)`.\n\nОбробляється тим самим методом контролера `update()`, що і PUT. Різниця — семантична: PATCH означає часткову зміну ресурсу.\n\n---\n\n## Заголовки запиту\n\n| Заголовок | Значення | Обов'язковий |\n|-----------|----------|---------------|\n| `Content-Type` | `application/json` | ✅ Так |\n\n---\n\n## Path-параметри\n\n| Параметр | Тип | Обов'язковий | Опис |\n|----------|-----|--------------|------|\n| `id` | integer | ✅ Так | ID літака, який потрібно оновити |\n\n---\n\n## Тіло запиту (JSON)\n\nНадсилайте лише ті поля, які змінюються:\n\n| Поле | Тип | Обов'язкове | Опис |\n|------|-----|-------------|------|\n| `model` | string | Ні | Нова модель літака (якщо змінюється) |\n| `airline` | string | Ні | Нова авіакомпанія (якщо змінюється) |\n\n```json\n{ \"airline\": \"Wizz Air\" }\n```\n\n> ℹ️ Мінімум одне поле повинно бути присутнє. Порожнє тіло поверне 400.\n\n---\n\n## Відповіді\n\n### ✅ 200 OK — Часткове оновлення застосовано\n\nПовертає повідомлення та результат злиття — незмінені поля зберігають попередні значення.\n\n```json\n{\n  \"message\": \"Plane 1 updated successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"model\": \"Boeing 747\",\n    \"airline\": \"Wizz Air\"\n  }\n}\n```\n\n| Поле | Тип | Опис |\n|------|-----|------|\n| `message` | string | Підтвердження з ID оновленого літака |\n| `data.id` | integer | Незмінний ID |\n| `data.model` | string | Попереднє значення (не надсилалось у запиті) |\n| `data.airline` | string | Нове значення з тіла запиту |\n\n---\n\n### ❌ 400 Bad Request — Порожнє тіло\n\n```json\n{ \"error\": \"No data provided\" }\n```\n\n---\n\n### ❌ 404 Not Found — Літак не знайдено\n\n```json\n{ \"error\": \"Plane not found\" }\n```"
                     },
                     "response": [
                         {
@@ -304,7 +343,11 @@
                             "originalRequest": {
                                 "method": "PATCH",
                                 "header": [{ "key": "Content-Type", "value": "application/json" }],
-                                "body": { "mode": "raw", "raw": "{\n    \"airline\": \"Wizz Air\"\n}" },
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"airline\": \"Wizz Air\"\n}",
+                                    "options": { "raw": { "language": "json" } }
+                                },
                                 "url": {
                                     "raw": "{{baseUrl}}/api/planes/1",
                                     "host": ["{{baseUrl}}"],
@@ -314,11 +357,43 @@
                             "body": "{\n  \"message\": \"Plane 1 updated successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"model\": \"Boeing 747\",\n    \"airline\": \"Wizz Air\"\n  }\n}"
                         },
                         {
+                            "name": "400 Bad Request — No data provided",
+                            "status": "Bad Request",
+                            "code": 400,
+                            "header": [{ "key": "Content-Type", "value": "application/json" }],
+                            "_postman_previewlanguage": "json",
+                            "originalRequest": {
+                                "method": "PATCH",
+                                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                                "body": { "mode": "raw", "raw": "" },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/planes/1",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "planes", "1"]
+                                }
+                            },
+                            "body": "{\n  \"error\": \"No data provided\"\n}"
+                        },
+                        {
                             "name": "404 Not Found — Plane does not exist",
                             "status": "Not Found",
                             "code": 404,
                             "header": [{ "key": "Content-Type", "value": "application/json" }],
                             "_postman_previewlanguage": "json",
+                            "originalRequest": {
+                                "method": "PATCH",
+                                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"airline\": \"Wizz Air\"\n}",
+                                    "options": { "raw": { "language": "json" } }
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/planes/99",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "planes", "99"]
+                                }
+                            },
                             "body": "{\n  \"error\": \"Plane not found\"\n}"
                         }
                     ]
@@ -336,11 +411,11 @@
                                 {
                                     "key": "id",
                                     "value": "2",
-                                    "description": "Integer — ID of the plane to delete"
+                                    "description": "integer — ID літака для видалення"
                                 }
                             ]
                         },
-                        "description": "Permanently removes a plane record from the system. This action is irreversible.\n\n⚠️ Current implementation does not persist deletion (in-memory only).\n\n### Path Parameter\n| Name | Type | Required | Description |\n|------|------|----------|-------------|\n| id | integer | yes | ID of the plane to delete |\n\n### Response 200 OK\n```json\n{\n  \"message\": \"Plane 2 has been deleted\"\n}\n```\n\n### Response 404 Not Found\n```json\n{\n  \"error\": \"Plane not found\"\n}\n```"
+                        "description": "# DELETE /api/planes/{id} — Видалити літак\n\n**Контролер:** `TestController@delete`\n**Атрибут:** `#[Route('/planes/{id}', name: 'planes_delete', methods: ['DELETE'])]`\n\nВидаляє запис літака з системи за його ID. Дія незворотна.\n\n> ⚠️ Поточна реалізація не виконує фактичного видалення з постійного сховища — дані зберігаються в `private array $planes` і скидаються при перезапуску сервера. У продакшн-версії необхідна інтеграція з Doctrine ORM та базою даних.\n\n---\n\n## Заголовки запиту\n\nНе потрібні — ендпоінт не вимагає жодних заголовків.\n\n---\n\n## Path-параметри\n\n| Параметр | Тип | Обов'язковий | Опис |\n|----------|-----|--------------|------|\n| `id` | integer | ✅ Так | ID літака, який потрібно видалити |\n\n---\n\n## Тіло запиту\n\nВідсутнє — DELETE-запит не приймає тіла.\n\n---\n\n## Відповіді\n\n### ✅ 200 OK — Літак видалено\n\nПовертає підтверджувальне повідомлення з ID видаленого літака.\n\n```json\n{\n  \"message\": \"Plane 2 has been deleted\"\n}\n```\n\n| Поле | Тип | Опис |\n|------|-----|------|\n| `message` | string | Підтвердження видалення з ID |\n\n> ℹ️ Повертається `200 OK`, а не `204 No Content`, оскільки контролер явно повертає тіло відповіді з повідомленням через `$this->json([...], Response::HTTP_OK)`.\n\n---\n\n### ❌ 404 Not Found — Літак не знайдено\n\n`findPlaneById()` повернув `null` — літак з вказаним ID відсутній у масиві `$planes`.\n\n```json\n{ \"error\": \"Plane not found\" }\n```\n\n| Поле | Тип | Опис |\n|------|-----|------|\n| `error` | string | Повідомлення про відсутність ресурсу |"
                     },
                     "response": [
                         {
