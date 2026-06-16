@@ -47,9 +47,8 @@ airport-api/
 ├── laravel/
 │   ├── app/Http/Controllers/PlaneController.php
 │   └── routes/web.php
-└── docs/
-    ├── airport_api_symfony.postman_collection.json
-    └── airport_api_laravel.postman_collection.json
+├─collection for symfony.json
+└─collection for laravel.json
 ```
 
 ---
@@ -109,8 +108,7 @@ php -S localhost:8000 -t public/
 curl http://localhost:8000/api/planes
 ```
 
-> ⚠️ Symfony за замовчуванням запускається на `https://127.0.0.1:8000`. При використанні `symfony serve` переконайтесь, що використовуєте правильний
-> протокол.
+> ⚠️ Symfony за замовчуванням запускається на `https://127.0.0.1:8000`. При використанні `symfony serve`
 
 ---
 
@@ -146,7 +144,7 @@ php artisan serve
 curl http://localhost:8000/api/planes
 ```
 
-> ⚠️ У запитах до Laravel рекомендується передавати заголовок `Accept: application/json`, щоб у разі помилки отримати JSON, а не HTML-сторінку.
+> ⚠️ У запитах до Laravel рекомендую передавати заголовок `Accept: application/json`, щоб у разі помилки отримати JSON, а не HTML-сторінку.
 
 ---
 
@@ -164,8 +162,8 @@ curl http://localhost:8000/api/planes
 
 | Фреймворк | Файл                                               |
 | --------- | -------------------------------------------------- |
-| Symfony   | `docs/airport_api_symfony.postman_collection.json` |
-| Laravel   | `docs/airport_api_laravel.postman_collection.json` |
+| Symfony   | `collection for symfony.json  ` |
+| Laravel   | `collection for laravel.json ` |
 
 ### Змінні середовища
 
@@ -187,7 +185,13 @@ curl http://localhost:8000/api/planes
 - Реальні JSON-тіла у вкладці **Examples**
 
 ---
+## Prompt for Claude Code
 
+
+`На основі наданих файлів коду, тобі треба зробити повну документацію для RESTFull API у форматі json, для postman. Мають бути прописані всі endpoints, запити до них і відповіді, статус-кодів... `
+
+
+---
 ## Автор
 
 |             |                              |
